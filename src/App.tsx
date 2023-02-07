@@ -41,33 +41,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    let newTranscript: Transcript[] = [];
+    const newTranscripts: Transcript[] = [...transcripts];
     switch (sortCategory) {
       case 'name':
-        newTranscript = transcripts.sort((a, b) => {
+        newTranscripts.sort((a, b) => {
           return a.student.studentName.localeCompare(b.student.studentName);
         });
         break;
-
       case 'id':
-        newTranscript = transcripts.sort((a, b) => {
+        newTranscripts.sort((a, b) => {
           return a.student.studentID - b.student.studentID;
         });
         break;
-
       default:
-        newTranscript = transcripts.sort((a, b) => {
+        newTranscripts.sort((a, b) => {
           return (
             a.grades.reduce((acc, c) => c.grade + acc, 0) / a.grades.length -
-            -b.grades.reduce((acc, c) => c.grade + acc, 0) / b.grades.length
+            b.grades.reduce((acc, c) => c.grade + acc, 0) / b.grades.length
           );
         });
-        break;
     }
     if (sortOrder === 'desc') {
-      newTranscript.reverse();
+      newTranscripts.reverse();
     }
-    setTranscripts(newTranscript);
+    setTranscripts(newTranscripts);
   }, [sortOrder, sortCategory]);
 
   const startIndex = 0 + ITEMS_PER_PAGE * (parseInt(pageNumber) - 1);
