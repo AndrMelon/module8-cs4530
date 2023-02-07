@@ -13,7 +13,7 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import './App.css';
 import { NewGradeForm } from './components/NewGradeForm';
 import { NewStudentForm } from './components/NewStudentForm';
@@ -22,6 +22,10 @@ import { getAllTranscripts } from './lib/client';
 import { Transcript } from './types/transcript';
 
 const ITEMS_PER_PAGE = 20;
+const transcriptsContext = React.createContext<Transcript[]>([]);
+export function useTranscriptsContext(): Transcript[] {
+  return useContext(transcriptsContext);
+}
 
 function App() {
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
@@ -39,21 +43,26 @@ function App() {
   useEffect(() => {
     let newTranscript: Transcript[] = [];
     switch (sortCategory) {
-
       case 'name':
-        newTranscript = transcripts.sort((a, b) => { return a.student.studentName.localeCompare(b.student.studentName) })
+        newTranscript = transcripts.sort((a, b) => {
+          return a.student.studentName.localeCompare(b.student.studentName);
+        });
         break;
 
       case 'id':
-        newTranscript = transcripts.sort((a, b) => { return a.student.studentID - b.student.studentID })
+        newTranscript = transcripts.sort((a, b) => {
+          return a.student.studentID - b.student.studentID;
+        });
         break;
 
-      default: newTranscript = transcripts.sort((a, b) => {
-        return a.grades.reduce((acc, c) => c.grade + acc, 0) / a.grades.length
-          - b.grades.reduce((acc, c) => c.grade + acc, 0) / b.grades.length
-      })
+      default:
+        newTranscript = transcripts.sort((a, b) => {
+          return (
+            a.grades.reduce((acc, c) => c.grade + acc, 0) / a.grades.length -
+            -b.grades.reduce((acc, c) => c.grade + acc, 0) / b.grades.length
+          );
+        });
         break;
-
     }
     if (sortOrder === 'desc') {
       newTranscript.reverse();
@@ -79,8 +88,6 @@ function App() {
     </WrapItem>
   ));
 
-
-
   return (
     <div className='App'>
       <ChakraProvider>
@@ -94,7 +101,6 @@ function App() {
                 onChange={option => {
                   console.log(`Selected sort order ${option.target.value}`);
                   setSortCategory(option.target.value);
-
                 }}>
                 <option value='id'>Student ID</option>
                 <option value='name'>Student name</option>
@@ -105,15 +111,18 @@ function App() {
                 onChange={option => {
                   console.log(`Selected sort order ${option.target.value}`);
                   setSortOrder(option.target.value);
-
                 }}>
                 <option value='asc'>Ascending</option>
                 <option value='desc'>Descending</option>
               </Select>
             </div>
           </GridItem>
-          <NewStudentForm />
-          <NewGradeForm />
+          <transcriptsContext.Provider value={transcripts}>
+            <NewStudentForm />
+          </transcriptsContext.Provider>
+          <transcriptsContext.Provider value={transcripts}>
+            <NewGradeForm />
+          </transcriptsContext.Provider>
         </Grid>
         <br />
         <Tag>Page #</Tag>
